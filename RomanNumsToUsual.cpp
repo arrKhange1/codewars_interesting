@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-using namespace std;      // MCMXC = 1990 идем с конца собирая все
+using namespace std;      // MCMXC = 1990 ГЁГ¤ГҐГ¬ Г± ГЄГ®Г­Г¶Г  Г±Г®ГЎГЁГ°Г Гї ГўГ±ГҐ
 
 void solve()
 {
