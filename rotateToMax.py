@@ -10,5 +10,6 @@ def max_rot(n):
             k += 1
         if (int(''.join(arr)) >= max1):
             max1 = int(''.join(arr))
+        print(arr)
     return max1
 print(max_rot(56789))
