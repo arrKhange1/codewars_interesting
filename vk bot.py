@@ -90,8 +90,9 @@ def create_keyboard(response):
     return keyboard
 
 
-game_flags = True
+game_flags = False
 game_capcha = False
+named_flag = 0
 
 for event in longpoll.listen():
 
@@ -231,31 +232,33 @@ for event in longpoll.listen():
 
             # FLAGS
 
-            elif response == '[club159274465|@arrkhange1] flags' or response == '[club159274465|arrkhange1 - just a personality] flags' and game_flags :
-
+            elif response == '[club159274465|@arrkhange1] flags' or response == '[club159274465|arrkhange1 - just a personality] flags'  :
+                game_flags = True
                 session.messages.send(chat_id=event.chat_id, message="Добро пожаловать в игру Флаги!\n\nНачинаем через 3 секунды!\n\n", random_id=0)
-                time.sleep(10)
+                time.sleep(3)
 
                 flag_cnt = 0
                 allright = True
 
                 session.messages.send(chat_id=event.chat_id, message="Назовите эту страну:\n\n", random_id=0)
-                while(longpoll.listen()):
-                    rand_gen = random.randint(0, 259)
-                    send_photo(session, event.peer_id, *load_photo(load, image_list[rand_gen]))
-                    flag_name = image_list[rand_gen][::-1][:image_list[rand_gen][::-1].find('\\')][4:][::-1]       # extractring a country name from a path: turning around the path, finding the first backslash, getting a slice til the backslash, skipping .png, reversing again into normal country
-                    response = longpoll.check()
-                    if translator.translate(flag_name) == response:
-                        session.messages.send(chat_id=event.chat_id,
-                                              message="Правильно! Ваш счет " + str(flag_cnt) + " / 5", random_id=0)
-                        flag_cnt += 1
-                        if flag_cnt == 5:
-                            session.messages.send(chat_id=event.chat_id, message="Поздравляю, Вы - гений географии!", random_id=0, keyboard = create_keyboard("/menu"))
-                            break
-                    else:
-                        session.messages.send(chat_id=event.chat_id, message="Неверно! Вы проиграли!", random_id=0,keyboard=create_keyboard("/menu"))
-                        break
-                    time.sleep(7)
+
+            elif game_flags:
+                rand_gen = random.randint(0, 259)
+                send_photo(session, event.peer_id, *load_photo(load, image_list[rand_gen]))
+                flag_name = image_list[rand_gen][::-1][:image_list[rand_gen][::-1].find('\\')][4:][::-1]       # extractring a country name from a path: turning around the path, finding the first backslash, getting a slice til the backslash, skipping .png, reversing again into normal country
+
+
+                if translator.translate(flag_name) == response:
+                    session.messages.send(chat_id=event.chat_id,
+                                          message="Правильно! Ваш счет " +  " / 5", random_id=0)
+                    named_flag += 1
+                    if named_flag == 5:
+                        session.messages.send(chat_id=event.chat_id, message="Поздравляю, Вы - гений географии!", random_id=0, keyboard = create_keyboard("/menu"))
+
+                else:
+                    session.messages.send(chat_id=event.chat_id, message="Неверно! Вы проиграли!", random_id=0,keyboard=create_keyboard("/menu"))
+
+
 
 
 
