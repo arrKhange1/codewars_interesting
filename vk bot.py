@@ -10,7 +10,7 @@ from vk_api.upload import VkUpload
 from datetime import datetime
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import time
-import  sys
+import sys
 
 
 import random
@@ -18,7 +18,7 @@ import random
 
 # collecting images into an array
 image_list = []
-for image_path in glob.glob("C:\\Users\\Артур\\Downloads\\Flags\\*.png"):
+for image_path in glob.glob("C:\\Users\\User\\Downloads\\Flags\\*.png"):
     im = imageio.imread(image_path)
     image_list.append(image_path)
     print (image_path)
@@ -27,8 +27,7 @@ print(image_list[0])
 
 # translater
 translator = Translator(from_lang="English", to_lang="Russian")
-result = translator.translate("Tokelau")
-print(result)
+
 #
 
 token = 'dbfd8caa3a154800a5799603dce97730179d2069e91307b69bb5e616719e47ec808c53cb20d238d2127a4'
@@ -39,8 +38,7 @@ longpoll = VkLongPoll(vk_session)
 s = ''
 timef = time.time()
 timemin = sys.maxsize
-file = open('game.txt', 'r')
-writing = ''
+
 
 
 
@@ -62,37 +60,39 @@ def send_photo(session, peer_id, owner_id, photo_id, access_key):
     )
 
 def create_keyboard(response):
-    keyboard = VkKeyboard(one_time=True)
+    keyboard1 = VkKeyboard(one_time=True)
     if response == '/menu':
-        keyboard.add_button('ИГРЫ',color=VkKeyboardColor.DEFAULT)
-        keyboard.add_button('КОМАНДЫ', color=VkKeyboardColor.PRIMARY)
+        keyboard1.add_button('ИГРЫ',color=VkKeyboardColor.PRIMARY)
+        keyboard1.add_button('КОМАНДЫ', color=VkKeyboardColor.PRIMARY)
     elif response == '[club159274465|@arrkhange1] игры' or response == '[club159274465|arrkhange1 - just a personality] игры':
-        keyboard.add_button('CASINO', color=VkKeyboardColor.NEGATIVE)
-        keyboard.add_button('CAPTCHA TRAINER', color=VkKeyboardColor.POSITIVE)
-        keyboard.add_button('FLAGS', color=VkKeyboardColor.PRIMARY)
+        keyboard1.add_button('CASINO', color=VkKeyboardColor.NEGATIVE)
+        keyboard1.add_button('CAPTCHA TRAINER', color=VkKeyboardColor.POSITIVE)
+        keyboard1.add_button('FLAGS', color=VkKeyboardColor.PRIMARY)
     elif response == '[club159274465|@arrkhange1] команды':
-        keyboard.add_button('УЧАСТНИКИ', color=VkKeyboardColor.NEGATIVE)
+        keyboard1.add_button('УЧАСТНИКИ', color=VkKeyboardColor.NEGATIVE)
     elif response == '[club159274465|@arrkhange1] casino':
-        keyboard = VkKeyboard(one_time=False)
-        keyboard.add_button('1', color=VkKeyboardColor.NEGATIVE)
-        keyboard.add_button('2', color=VkKeyboardColor.POSITIVE)
-        keyboard.add_button('3', color=VkKeyboardColor.POSITIVE)
-        keyboard.add_button('4', color=VkKeyboardColor.NEGATIVE)
-        keyboard.add_line()
-        keyboard.add_button('5', color=VkKeyboardColor.POSITIVE)
-        keyboard.add_button('6', color=VkKeyboardColor.NEGATIVE)
-
+        keyboard1 = VkKeyboard(one_time=False)
+        keyboard1.add_button('1', color=VkKeyboardColor.NEGATIVE)
+        keyboard1.add_button('2', color=VkKeyboardColor.POSITIVE)
+        keyboard1.add_button('3', color=VkKeyboardColor.POSITIVE)
+        keyboard1.add_button('4', color=VkKeyboardColor.NEGATIVE)
+        keyboard1.add_line()
+        keyboard1.add_button('5', color=VkKeyboardColor.POSITIVE)
+        keyboard1.add_button('6', color=VkKeyboardColor.NEGATIVE)
+    elif response == '[club159274465|@arrkhange1] Далее':
+        keyboard1.add_button('Далее ->', color= VkKeyboardColor.POSITIVE)
 
 
     elif response == '/close':
-         return keyboard.get_empty_keyboard()
-    keyboard = keyboard.get_keyboard()
-    return keyboard
+         return keyboard1.get_empty_keyboard()
+    keyboard1 = keyboard1.get_keyboard()
+    return keyboard1
 
 
 game_flags = False
 game_capcha = False
-named_flag = 0
+flags_named = 0
+flag_name = ''
 
 for event in longpoll.listen():
 
@@ -229,37 +229,31 @@ for event in longpoll.listen():
                 session.messages.send(chat_id=event.chat_id, message='Погнали!', random_id=0,
                                       keyboard=da)
 
+            # NEW FLAGS
 
-            # FLAGS
-
-            elif response == '[club159274465|@arrkhange1] flags' or response == '[club159274465|arrkhange1 - just a personality] flags'  :
+            elif response == "Флаги" or response == '[club159274465|@arrkhange1] далее -&gt;' or response == '[club159274465|arrkhange1 - just a personality] далее -&gt;' or response == '[club159274465|arrkhange1 - just a personality] flags' or response == '[club159274465|@arrkhange1] flags':
                 game_flags = True
-                session.messages.send(chat_id=event.chat_id, message="Добро пожаловать в игру Флаги!\n\nНачинаем через 3 секунды!\n\n", random_id=0)
-                time.sleep(3)
-
-                flag_cnt = 0
-                allright = True
-
                 session.messages.send(chat_id=event.chat_id, message="Назовите эту страну:\n\n", random_id=0)
+                rand_gen = random.randint(0, 259)  # instead of zeros below
+                send_photo(session, event.peer_id, *load_photo(load, image_list[0]))
+                flag_name = image_list[0][::-1][:image_list[0][::-1].find('\\')][4:][::-1]
 
-            elif game_flags:
-                rand_gen = random.randint(0, 259)
-                send_photo(session, event.peer_id, *load_photo(load, image_list[rand_gen]))
-                flag_name = image_list[rand_gen][::-1][:image_list[rand_gen][::-1].find('\\')][4:][::-1]       # extractring a country name from a path: turning around the path, finding the first backslash, getting a slice til the backslash, skipping .png, reversing again into normal country
+            elif response == flag_name.lower() and game_flags:
+                print(11111)
+                flags_named += 1
+                session.messages.send(chat_id=event.chat_id, message="Правильно!\nФлагов названо: " + str(flags_named) +" / 5\nДо победы осталось назвать флагов: " + str(5-flags_named)+"\n\n", random_id=0, keyboard = create_keyboard('[club159274465|@arrkhange1] Далее'))
+                if flags_named == 5:
+                    session.messages.send(chat_id=event.chat_id, message="Поздравляю, Вы победили!\n\n", random_id=0)
+                    game_flags = False
 
+            elif game_flags and not event.from_me:
+                session.messages.send(chat_id=event.chat_id, message="Вы проиграли!\nФлагов названо: " + str(flags_named) + " / 5\n До победы не хватило флагов: " + str(5-flags_named)+"\n\n", random_id=0)
+                game_flags = False
 
-                if translator.translate(flag_name) == response:
-                    session.messages.send(chat_id=event.chat_id,
-                                          message="Правильно! Ваш счет " +  " / 5", random_id=0)
-                    named_flag += 1
-                    if named_flag == 5:
-                        session.messages.send(chat_id=event.chat_id, message="Поздравляю, Вы - гений географии!", random_id=0, keyboard = create_keyboard("/menu"))
-
-                else:
-                    session.messages.send(chat_id=event.chat_id, message="Неверно! Вы проиграли!", random_id=0,keyboard=create_keyboard("/menu"))
-
-
-
+            #elif game_flags:
+                #flags_named = 0
+                #session.messages.send(chat_id=event.chat_id, message="Неверно, Вы проиграли!\n\n", random_id=0)
+                #game_flags = 0
 
 
 
