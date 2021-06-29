@@ -248,12 +248,10 @@ for event in longpoll.listen():
 
             elif game_flags and not event.from_me:
                 session.messages.send(chat_id=event.chat_id, message="Вы проиграли!\nФлагов названо: " + str(flags_named) + " / 5\n До победы не хватило флагов: " + str(5-flags_named)+"\n\n", random_id=0)
+                flags_named = 0
                 game_flags = False
 
-            #elif game_flags:
-                #flags_named = 0
-                #session.messages.send(chat_id=event.chat_id, message="Неверно, Вы проиграли!\n\n", random_id=0)
-                #game_flags = 0
+        
 
 
 
