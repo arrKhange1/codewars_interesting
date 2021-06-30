@@ -1,5 +1,4 @@
-from google_trans_new import google_translator
-
+from pygoogletranslation import Translator
 
 # working with images
 import imageio
@@ -17,7 +16,7 @@ import random
 
 # collecting images into an array
 image_list = []
-for image_path in glob.glob("C:\\Users\\Артур\\Downloads\\Flags\\*.png"):
+for image_path in glob.glob("C:\\Users\\User\\Downloads\\Flags\\*.png"):
     im = imageio.imread(image_path)
     image_list.append(image_path)
     #print(image_path)
@@ -25,7 +24,9 @@ for image_path in glob.glob("C:\\Users\\Артур\\Downloads\\Flags\\*.png"):
 #print(image_list[0])
 
 # translator
-translator = google_translator()
+proxy = {"http":"http://sampleproxy.com:80"}
+translator = Translator(proxies=proxy)
+print(translator.translate("This is a pen", src='en', dest='ru').text)
 #
 
 token = 'dbfd8caa3a154800a5799603dce97730179d2069e91307b69bb5e616719e47ec808c53cb20d238d2127a4'
@@ -61,8 +62,6 @@ def flag_name_precision(flag, resp): # >=40% mb
 
     precision = global_match / len(flag)
     return precision
-
-print(flag_name_precision("Россия", "Расия"))
 
 def load_photo(upload, photo):
     response = upload.photo_messages(photo)[0]
@@ -116,7 +115,7 @@ def create_keyboard(response):
 game_flags = False
 game_capcha = False
 flags_named = 0
-flag_name = ''
+flag_name = ""
 
 for event in longpoll.listen():
 
@@ -162,7 +161,7 @@ for event in longpoll.listen():
                 n = 0
             #######################
             elif response == '/menu':
-                game_flags = False
+                game_flags = True
                 session.messages.send(chat_id=event.chat_id, message='Список моих возможностей: ', random_id=0,
                                       keyboard=keyboard)
 
@@ -271,30 +270,33 @@ for event in longpoll.listen():
             # NEW FLAGS
 
             elif response == "Флаги" or response == '[club159274465|@arrkhange1] далее -&gt;' or response == '[club159274465|arrkhange1 - just a personality] далее -&gt;' or response == '[club159274465|arrkhange1 - just a personality] flags' or response == '[club159274465|@arrkhange1] flags':
+                print(11111)
                 game_flags = True
-                session.messages.send(chat_id=event.chat_id, message="Назовите эту страну:\n\n", random_id=0)
+                session.messages.send(chat_id=event.chat_id, message="Назовите этот флаг:\n\n", random_id=0)
                 rand_gen = random.randint(0, 259)  # instead of zeros below
                 send_photo(session, event.peer_id, *load_photo(load, image_list[rand_gen]))
                 flag_name = image_list[rand_gen][::-1][:image_list[rand_gen][::-1].find('\\')][4:][::-1]
                 flag_name = flag_name.replace('-', ' ')
+                print("flag_name = " , flag_name)
                 print(list(flag_name))
 
-            elif flag_name_precision(response,translator.translate(flag_name.lower(), lang_src='en', lang_tgt='ru').lower().strip() ) >= 0.4 and game_flags:
+            elif flag_name != '' and flag_name_precision(response,translator.translate(flag_name, dest='ru').text) >= 0.4 and game_flags:
 
-                cntry_name = translator.translate(flag_name, lang_src='en', lang_tgt='ru').strip()
+                cntry_name = translator.translate(flag_name, dest='ru').text
                 flags_named += 1
-                session.messages.send(chat_id=event.chat_id, message="Правильно! Страна - " + cntry_name + "!\nФлагов названо: " + str(
+                session.messages.send(chat_id=event.chat_id, message="Правильно! Название флага - " + cntry_name + "!\nФлагов названо: " + str(
                     flags_named) + " / 5\nДо победы осталось назвать флагов: " + str(5 - flags_named) + "\n\n",
                                       random_id=0, keyboard=create_keyboard('[club159274465|@arrkhange1] Далее'))
                 if flags_named == 5:
-                    session.messages.send(chat_id=event.chat_id, message="Поздравляю, Вы победили!\n\n", random_id=0)
+                    session.messages.send(chat_id=event.chat_id, message="Поздравляю, Вы победили!\n\n", random_id=0, keyboard = create_keyboard('/close'))
+                    flags_named = 0
                     game_flags = False
 
             elif game_flags and not event.from_me:
 
-                cntry_name = translator.translate(flag_name, lang_src='en', lang_tgt='ru').strip()
+                cntry_name = translator.translate(flag_name,dest='ru').text
                 print(list(cntry_name))
-                session.messages.send(chat_id=event.chat_id, message="Вы проиграли! На самом деле это " + cntry_name + "!\nФлагов названо: " + str(
+                session.messages.send(chat_id=event.chat_id, message="Вы проиграли! На самом деле флаг называется " + cntry_name + "!\nФлагов названо: " + str(
                     flags_named) + " / 5\n До победы не хватило флагов: " + str(5 - flags_named) + "\n\n", random_id=0)
                 flags_named = 0
                 game_flags = False
